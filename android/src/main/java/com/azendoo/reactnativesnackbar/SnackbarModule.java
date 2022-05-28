@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.os.Build;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 public class SnackbarModule extends ReactContextBaseJavaModule {
 
@@ -52,25 +54,36 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
 
         try {
             view = (ViewGroup) getCurrentActivity().getWindow().getDecorView().findViewById(android.R.id.content);
-            if (view == null) return;
-
-            mActiveSnackbars.clear();
-
-            if (!view.hasWindowFocus()) {
-                // The view is not focused, we should get all the modal views in the screen.
-                ArrayList<View> modals = recursiveLoopChildren(view, new ArrayList<View>());
-
-                for (View modal : modals) {
-                    if (modal == null) continue;
-
-                    displaySnackbar(modal, options, callback);
-                }
-
+            if (view == null) {
                 return;
             }
 
-            displaySnackbar(view, options, callback);
+            mActiveSnackbars.clear();
 
+            // `hasWindowFocus`: Returns true if this activity's *main* window currently has window focus.
+            // Note that this is not the same as the view itself having focus.
+            if (!view.hasWindowFocus()) {
+                // Get all modal views on the screen.
+                ArrayList<View> modals = recursiveLoopChildren(view, new ArrayList<View>());
+                // Reverse array in order to get first the last modal rendered.
+                Collections.reverse(modals);
+
+                for (View modal : modals) {
+                    if (modal == null) {
+                        continue;
+                    }
+                    displaySnackbar(modal, options, callback);
+                }
+
+                // No valid modals.
+                if (view.getVisibility() == View.VISIBLE) {
+                    displaySnackbar(view, options, callback);
+                } else {
+                    Log.w(REACT_NAME, "Content view is not in focus or not visible");
+                }
+                return;
+            }
+            displaySnackbar(view, options, callback);
         } catch (Exception e) {
          e.printStackTrace();
             return;
@@ -91,6 +104,7 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
     private void displaySnackbar(View view, ReadableMap options, final Callback callback) {
         String text = getOptionValue(options, "text", "");
         int duration = getOptionValue(options, "duration", Snackbar.LENGTH_SHORT);
+        int numberOfLines = getOptionValue(options, "numberOfLines", 2);
         int textColor = getOptionValue(options, "textColor", Color.WHITE);
         boolean rtl = getOptionValue(options, "rtl", false);
         String fontFamily = getOptionValue(options, "fontFamily", null);
@@ -104,7 +118,14 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
             }
         }
 
-        Snackbar snackbar = Snackbar.make(view, text, duration);
+        Snackbar snackbar;
+        try {
+            snackbar = Snackbar.make(view, text, duration);
+        } catch (IllegalArgumentException e) {
+            // TODO: Fix root cause of "No suitable parent found from the given view. Please provide a valid view."
+            e.printStackTrace();
+            return;
+        }
         View snackbarView = snackbar.getView();
 
         if (rtl && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -113,6 +134,7 @@ public class SnackbarModule extends ReactContextBaseJavaModule {
         }
 
         TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        snackbarText.setMaxLines(numberOfLines);
         snackbarText.setTextColor(textColor);
 
         if (font != null) {

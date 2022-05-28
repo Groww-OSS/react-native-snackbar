@@ -31,6 +31,12 @@ export interface SnackBarOptions {
   text: string;
 
   /**
+   * Number of text lines to display on the snackbar.
+   * Default 2 lines are shown.
+   */
+  numberOfLines?: number;
+
+  /**
    * Length of time the Snackbar stays on screen.
    * Must be one of Snackbar.LENGTH_SHORT, Snackbar.LENGTH_LONG, or Snackbar.LENGTH_INDEFINITE.
    */
@@ -57,6 +63,16 @@ export interface SnackBarOptions {
    * Action button configuration options.
    */
   action?: SnackbarAction;
+
+  /**
+   * Rtl the snackbar
+   * 
+   * [Android only, API 17+] Whether the Snackbar should render right-to-left 
+   * @requires `android:supportsRtl="true"`
+   * @see https://android-developers.googleblog.com/2013/03/native-rtl-support-in-android-42.html
+   * @see https://github.com/MortezaHeydari97/react-native-snackbar/blob/main/example
+   */
+  rtl?: boolean
 }
 
 /**
