@@ -1,2 +1,6 @@
-src/__tests__/
-example/
+/*
+!/src/
+!/lib/
+!/android/
+!/ios/
+!/RNSnackbar.podspec
