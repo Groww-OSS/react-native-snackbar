@@ -182,7 +182,7 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
 - (void)presentWithDuration:(NSNumber *)duration {
     _pendingOptions = nil;
     _pendingCallback = nil;
-    UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
+    UIWindow *keyWindow = [[UIApplication sharedApplication] delegate].window;
     [keyWindow addSubview:self];
     [self setTranslatesAutoresizingMaskIntoConstraints:false];
     [keyWindow addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[self(>=48)]|"
