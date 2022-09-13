@@ -75,7 +75,7 @@ static const NSTimeInterval ANIMATION_DURATION = 0.250;
     CGFloat bottomPadding = topPadding;
 
     if (@available(iOS 11.0, *)) {
-        UIWindow *window = UIApplication.sharedApplication.keyWindow;
+        UIWindow *window = [[UIApplication sharedApplication] delegate].window;
 
         if (window.safeAreaInsets.bottom > bottomPadding)
             bottomPadding = window.safeAreaInsets.bottom;
